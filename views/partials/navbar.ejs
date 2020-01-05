@@ -1,0 +1,36 @@
+<nav class="navbar">
+  <div class="logo">
+  <a class="a_logo" href="/shop">Multi-Tracker</a>
+  </div>
+  <div class="navbar-list">
+    <ul>
+      <li class="nav-item shopping-cart">
+        <a class="nav-link" href="/shop/shopping_cart"><i class="fas fa-shopping-cart"></i> Shopping Cart
+          <% if(session.cart && totalQty !=0){ %>
+            <span class="cart-badge"><%= totalQty %></span>
+          <% } %>
+        </a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link" id="navbarDropdown">
+          <% if(isLoggedIn){ %>
+            Welcome, <br><%= user.name %>
+          <% } else { %>
+            <i class="fas fa-user"></i> User Account
+          <% }%> <i class="fas fa-sort-down"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div id="dropdown-menu" class="dropdown-menu" aria-labelledby="navbarDropdown">
+    <% if(isLoggedIn){%>
+      <a class="dropdown-item" href="/dashboard">My Items</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="/users/logout">Logout</a>
+    <%} else {%>
+      <a class="dropdown-item" href="/users/register">Register</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="/users/login">Login</a>
+    <%}%>
+  </div>
+</nav>

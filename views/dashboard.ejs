@@ -1,0 +1,10 @@
+<div class="dashboard-container">
+  <h1>Your Items</h1>
+  <p>Welcome <%= user.name %></p>
+  <% purchased_item.forEach(item=>{ %>
+    <div class="dashboard-items">
+      <span class="item-name"><%= item.name %></span> <span class="purchased-on">purchased on <%= item.purchased_at %></span>
+    </div>
+  <% });%>
+  <a href="/users/logout" class="btn btn-secondary">Logout</a>
+</div>

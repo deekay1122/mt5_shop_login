@@ -1,0 +1,23 @@
+<div class="cart-container">
+  <div class="cart-content">
+    <%if(products!==null){%>
+      <h1>Now In Cart</h1>
+        <% products.forEach(product=>{ %>
+          <div>
+            <%= product.item.productName %> <%= product.item.price %> JPY
+          </div>
+        <% }); %>
+        <div>
+            Total Qty <%= totalQty %>
+        </div>
+        <div>
+            Total Price <%= totalPrice %> JPY
+        </div>
+        <a href="/shop/checkout" class="btn btn-primary">Checkout</a>
+    <%} else { %>
+      <div>
+        No Items In Cart!
+      </div>
+    <%}%>
+  </div>
+</div>

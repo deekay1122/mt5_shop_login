@@ -1,44 +1,150 @@
+require('dotenv').config();
 // Developed by Michel Buffa
 
 const fs = require("fs");
 // We need to use the express framework: have a real web server that knows how to send mime types etc.
 const express = require("express");
 const path = require("path");
+const expressLayouts = require('express-ejs-layouts');
+const passport = require('passport');
+const flash = require('connect-flash');
+const nodemailer = require('nodemailer');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 // Init globals variables for each module required
 const app = express(),
   http = require("http"),
   server = http.createServer(app);
 
+// Ensure Authenticated
+const { ensureAuthenticated, forwardAuthenticated } = require('./config/auth');
+
+// Stripe Config
+const keyPublishable = process.env.PUBLISHABLE_KEY;
+const keySecret = process.env.SECRET_KEY;
+const stripe = require("stripe")(keySecret);
+
+// Passport Config
+require('./config/passport')(passport);
+
+// DB Config
+const Sequelize = require('sequelize');
+const sequelize = require('./config/connection');
+const User = require('./models/User');
+const Order = require('./models/Order');
+const Product = require('./models/Product');
+const Cart = require('./models/Cart');
+
+User.hasMany(Order);
+
+// Connect to Mysql
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+
+  sequelize.sync();
+
+// EJS
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+app.use(expressLayouts);
+// app.use(express.static(path.join(__dirname, '/public')));
+
+// Express body parser
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Express session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: new SequelizeStore({
+      db: sequelize
+    }),
+    cookie: { maxAge: 60 * 60 * 1000 }
+  })
+);
+
+// JSON Config
+app.use(
+  express.json({
+    // We need the raw body to verify webhook signatures.
+    // Let's compute it only when hitting the Stripe webhook endpoint.
+    verify: function(req, res, buf) {
+      if (req.originalUrl.startsWith("/webhook")) {
+        req.rawBody = buf.toString();
+      }
+    }
+  })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect flash
+app.use(flash());
+
+// Global variables
+app.use(function(req, res, next) {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  res.locals.isLoggedIn = req.isAuthenticated();
+  res.locals.session = req.session;
+  next();
+});
+
 // Config
 const PORT = process.env.PORT,
   TRACKS_PATH = "./client/multitrack",
   addrIP = process.env.IP;
 
-if (PORT == 8009) {
-  app.use(function(req, res, next) {
-    const user = auth(req);
-
-    if (user === undefined || user["name"] !== "super" || user["pass"] !== "secret") {
-      res.statusCode = 401;
-      res.setHeader("WWW-Authenticate", 'Basic realm="Super duper secret area"');
-      res.end("Unauthorized");
-    } else {
-      next();
-    }
-  });
-}
+// if (PORT == 8009) {
+//   app.use(function(req, res, next) {
+//     const user = auth(req);
+//
+//     if (user === undefined || user["name"] !== "super" || user["pass"] !== "secret") {
+//       res.statusCode = 401;
+//       res.setHeader("WWW-Authenticate", 'Basic realm="Super duper secret area"');
+//       res.end("Unauthorized");
+//     } else {
+//       next();
+//     }
+//   });
+// }
 
 app.use(express.static(path.resolve(__dirname, "client")));
+// app.use(express.static(path.join(__dirname, "/client")));
+// app.use('client', express.static('client'));
+// app.use(express.static('client'));
+
+// Routes
+// app.use('/', require('./routes/index.js'));
+app.use('/users', require('./routes/users'));
+app.use('/shop', require('./routes/shop'));
 
 // launch the http server on given port
 server.listen(PORT || 3000, addrIP || "0.0.0.0", () => {
-  const addr = server.address();
-  console.log("MT5 server listening at", addr.address + ":" + addr.port);
+  // const addr = server.address();
+  console.log("MT5 server listening at", addrIP + ":" + PORT);
 });
 
 // routing
-app.get("/", (req, res) => res.sendfile(__dirname + "/index.html"));
+app.get("/", ensureAuthenticated, (req, res) => {
+  console.log('I am heeeeeeer');
+  res.sendFile(__dirname + "/client/index.html");
+
+});
 
 // routing
 app.get("/track", async (req, res) => {
@@ -66,6 +172,41 @@ app.get("/track/:id", async (req, res) => {
   res.write(JSON.stringify(track));
   res.end();
 });
+
+// Dashboard
+app.get('/dashboard', ensureAuthenticated, async (req, res) =>{
+  const products = await Product.findAll();
+  const userId = await req.user.id;
+  let purchased_item = [];
+  let totalQty = 0;
+  let totalPrice = 0;
+  const user = await User.findOne({
+    where:{
+      id:userId
+    },
+    include: [Order]
+  });
+  user.orders.forEach(order=>{
+    const items = order.description.split(',');
+    items.forEach(item=>{
+      purchased_item.push({name:item, purchased_at:order.createdAt});
+    });
+  });
+  if(req.session.cart!==undefined){
+    const cart = new Cart(req.session.cart);
+    cart.generateArray().forEach(item=>{
+      totalPrice += item.item.price;
+      totalQty += item.qty;
+    });
+  }
+  res.render('dashboard', {
+      user,
+      purchased_item,
+      totalQty,
+      totalPrice
+    });
+  }
+);
 
 const getTracks = async () => {
   const directories = await getFiles(TRACKS_PATH);
@@ -120,3 +261,6 @@ const getFiles = async dirName =>
       resolve(directoryObject);
     })
   );
+
+  // product seeder
+// require('./seeders/productSeeder');

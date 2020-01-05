@@ -1,0 +1,23 @@
+<div class="shop-message">
+  <div>
+    <% include ../partials/messages %>
+  </div>
+  <% if(req.user){ %>
+
+  <% } %>
+</div>
+<div class="shop-container">
+<% products.forEach((product=>{%>
+  <div class="shop-card">
+  <img src="<%-product.imagePath%>" class="card-img" alt="...">
+  <div class="card-items">
+    <h5 class="card-title"><%-product.productName%></h5>
+    <p class="card-text"><%-product.description%></p>
+    <div class="">
+      <div class="price float-left">¥<%-product.price%></div>
+      <a href="/shop/add_to_shopping_cart/<%-product.id%>" class="btn btn-success float-right">Add To Cart</a>
+    </div>
+  </div>
+</div>
+<%}));%>
+</div>
