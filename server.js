@@ -123,10 +123,10 @@ const PORT = process.env.PORT,
 //   });
 // }
 
-app.use(express.static(path.resolve(__dirname, "client")));
+// app.use(express.static(path.resolve(__dirname, "client")));
 // app.use(express.static(path.join(__dirname, "/client")));
 // app.use('client', express.static('client'));
-// app.use(express.static('client'));
+app.use(express.static('client'));
 
 // Routes
 // app.use('/', require('./routes/index.js'));
@@ -140,9 +140,9 @@ server.listen(PORT || 3000, addrIP || "0.0.0.0", () => {
 });
 
 // routing
-app.get("/", ensureAuthenticated, (req, res) => {
-  console.log('I am heeeeeeer');
-  res.sendFile(__dirname + "/client/index.html");
+app.get("/multitracker", ensureAuthenticated, (req, res) => {
+  console.log('I am from the get / request');
+  res.sendFile(__dirname + "/index.html");
 
 });
 

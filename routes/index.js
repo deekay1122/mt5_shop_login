@@ -8,7 +8,7 @@ const { ensureAuthenticated, forwardAuthenticated } = require('../config/auth');
 
 // routing
 router.get("/", ensureAuthenticated, (req, res) => {
-  console.log('I am heeeeeeer');
+  console.log('I am from the get / request');
   res.sendfile(__dirname + "/index.html");
 
 });
