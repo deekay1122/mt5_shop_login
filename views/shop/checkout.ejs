@@ -6,13 +6,12 @@
 						<div class="product-info">
 							<%= product.item.productName %> <%= product.item.price %> JPY
 						</div>
+						<div class="purchased-before">
 							<% if(purchased_before.includes(String(product.item.id))){ %>
-								<div class="purchased-before">
-									<span>You already have this item</span> <a href="/shop/cart_item_delete/<%=product.item.id%>" class="btn btn-warning">
-									  (delete)
-									</a>
-								</div>
+								<span>You already have this item</span> 
 							<% } %>
+								<a href="/shop/cart_item_delete/<%=product.item.id%>" class="btn btn-warning">(delete)</a>
+						</div>
 					</div>
 				<% } %>
 			<% })%>

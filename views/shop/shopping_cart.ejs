@@ -6,6 +6,7 @@
           <% if (product.qty != 0) { %>
             <div>
               <%= product.item.productName %> <%= product.item.price %> JPY
+              <a href="/shop/cart_item_delete/<%=product.item.id%>" class="btn btn-warning">(delete)</a>
             </div>
           <% } %>
         <% }); %>

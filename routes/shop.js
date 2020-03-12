@@ -36,7 +36,7 @@ router.get('/', async (req, res)=>{
       orders = [].concat.apply([], orders);
       orders = orders.filter(onlyUnique);
     });
-    res.render('shop/shop',{
+    return res.render('shop/shop',{
       products,
       orders,
       req,
@@ -46,7 +46,7 @@ router.get('/', async (req, res)=>{
     });
   }
   else {
-    res.render('shop/shop',{
+    return res.render('shop/shop',{
       products,
       req,
       totalQty,
@@ -61,40 +61,40 @@ router.get('/add_to_shopping_cart/:id', (req, res)=>{
   let cart = new Cart(req.session.cart ? req.session.cart : {} );
   Product.findOne({where: {id: productId}}).then(async product=>{
     if(cart.items[productId] == undefined){
-      cart.add(product, product.id);
-      req.session.cart = cart;
-      await req.flash('success_msg', `${product.productName} is added to the cart`);
-      res.redirect('/shop');
+      await cart.add(product, product.id);
+      req.session.cart = await cart;
+      req.flash('success_msg', `${product.productName} is added to the cart`);
+      return res.redirect('/shop');
     }
     else if(cart.items[productId] !== undefined){
       if(cart.items[productId].qty == 1){
         await req.flash('error_msg', 'You already have that item in cart');
-        res.redirect('/shop');
+        return res.redirect('/shop');
       }
       else if (cart.items[productId].qty == 0){
-        cart.add(product, product.id);
-        req.session.cart = cart;
+        await cart.add(product, product.id);
+        req.session.cart = await cart;
         await req.flash('success_msg', `${product.productName} is added to the cart`);
-        res.redirect('/shop');
+        return res.redirect('/shop');
       }
     }
   })
   .catch(err => {
     console.log(err);
-    res.redirect('/shop');
+    return res.redirect('/shop');
   });
 });
 
-router.get('/cart_item_delete/:id', (req, res)=>{
-  const productId = req.params.id;
-  let cart = new Cart(req.session.cart ? req.session.cart : {} );
+router.get('/cart_item_delete/:id', async (req, res)=>{
+  const productId = await req.params.id;
+  let cart = await new Cart(req.session.cart ? req.session.cart : {} );
   // console.log(cart.items[productId].qty);
   if (cart.items[productId].qty == 1){
-    cart.delete(productId);
-    res.redirect('/shop/checkout');
+    await cart.delete(productId);
+    return res.redirect('back');
   } 
   else if (cart.items[productId].qty == 0){
-    res.redirect('/shop/checkout');
+    return res.redirect('back');
   }
 });
 
@@ -111,7 +111,7 @@ router.get('/shopping_cart', (req, res)=>{
       totalPrice += item.price;
       totalQty += item.qty;
     });
-    return res.render('shop/shopping_cart', {
+    res.render('shop/shopping_cart', {
       products,
       user,
       totalQty,
@@ -147,8 +147,8 @@ router.get('/checkout', ensureAuthenticated, async (req, res)=>{
   if(totalQty == 0){
     return res.redirect('/shop');
   } else {
-    const products_in_cart = cart.generateArray();
-    res.render('shop/checkout', {
+    const products_in_cart = await cart.generateArray();
+    return res.render('shop/checkout', {
       totalQty,
       totalPrice,
       purchased_before,
