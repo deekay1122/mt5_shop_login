@@ -85,16 +85,23 @@ router.get('/add_to_shopping_cart/:id', (req, res)=>{
   });
 });
 
+router.get('/test', (req, res)=>{
+  res.send("Here");
+});
+
 router.get('/cart_item_delete/:id', (req, res)=>{
   const productId = req.params.id;
   let cart = new Cart(req.session.cart ? req.session.cart : {} );
+  // console.log(cart.items[productId].qty);
   if (cart.items[productId].qty == 1){
     cart.delete(productId);
-    console.log(cart);
-    res.redirect('shop/checkout');
-  } else if (cart.items[productId].qty == 0){
-    console.log(cart);
-    res.redirect('shop/checkout');
+    // console.log(cart);
+    // res.send(res.req.originalUrl);
+    res.redirect('/shop/checkout');
+  } 
+  else if (cart.items[productId].qty == 0){
+    // console.log(cart);
+    res.redirect('/shop/checkout');
   }
 });
 
