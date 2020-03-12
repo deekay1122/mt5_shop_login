@@ -1,11 +1,13 @@
 <div class="cart-container">
   <div class="cart-content">
-    <%if(products!==null){%>
+    <%if(totalQty != 0){%>
       <h1>Now In Cart</h1>
         <% products.forEach(product=>{ %>
-          <div>
-            <%= product.item.productName %> <%= product.item.price %> JPY
-          </div>
+          <% if (product.qty != 0) { %>
+            <div>
+              <%= product.item.productName %> <%= product.item.price %> JPY
+            </div>
+          <% } %>
         <% }); %>
         <div>
             Total Qty <%= totalQty %>

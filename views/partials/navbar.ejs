@@ -6,6 +6,7 @@
     <ul>
       <li class="nav-item shopping-cart">
         <a class="nav-link" href="/shop/shopping_cart"><i class="fas fa-shopping-cart"></i> Shopping Cart
+          <% console.log(session.cart);%>
           <% if(session.cart && totalQty !=0){ %>
             <span class="cart-badge"><%= totalQty %></span>
           <% } %>

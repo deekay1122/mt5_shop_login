@@ -141,7 +141,6 @@ server.listen(PORT || 3000, addrIP || "0.0.0.0", () => {
 
 // routing
 app.get("/multitracker", ensureAuthenticated, (req, res) => {
-  console.log('I am from the get / request');
   res.sendFile(__dirname + "/index.html");
 
 });

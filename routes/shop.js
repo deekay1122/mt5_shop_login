@@ -15,11 +15,11 @@ router.get('/', async (req, res)=>{
   let totalQty = 0;
   let totalPrice = 0;
   const cart = new Cart(req.session.cart ? req.session.cart : {} );
+  cart.generateArray().forEach(async item=>{
+    totalQty += item.qty;
+    totalPrice += item.item.price * item.qty;
+  });
   if(req.user){
-    cart.generateArray().forEach(item=>{
-      totalPrice += item.item.price;
-      totalQty += item.qty;
-    });
     const userId = await req.user.id;
     const user = await User.findOne({
       where:{
@@ -46,10 +46,6 @@ router.get('/', async (req, res)=>{
     });
   }
   else {
-    cart.generateArray().forEach(item=>{
-      totalPrice += item.item.price;
-      totalQty += item.qty;
-    });
     res.render('shop/shop',{
       products,
       req,
@@ -75,6 +71,12 @@ router.get('/add_to_shopping_cart/:id', (req, res)=>{
         await req.flash('error_msg', 'You already have that item in cart');
         res.redirect('/shop');
       }
+      else if (cart.items[productId].qty == 0){
+        cart.add(product, product.id);
+        req.session.cart = cart;
+        await req.flash('success_msg', `${product.productName} is added to the cart`);
+        res.redirect('/shop');
+      }
     }
   })
   .catch(err => {
@@ -83,33 +85,42 @@ router.get('/add_to_shopping_cart/:id', (req, res)=>{
   });
 });
 
+router.get('/cart_item_delete/:id', (req, res)=>{
+  const productId = req.params.id;
+  let cart = new Cart(req.session.cart ? req.session.cart : {} );
+  if (cart.items[productId].qty == 1){
+    cart.delete(productId);
+    console.log(cart);
+    res.redirect('shop/checkout');
+  } else if (cart.items[productId].qty == 0){
+    console.log(cart);
+    res.redirect('shop/checkout');
+  }
+});
+
 router.get('/shopping_cart', (req, res)=>{
   const user = req.user;
+  const cart = new Cart(req.session.cart ? req.session.cart : {});
   let totalQty = 0;
   let totalPrice = 0;
-  if(!req.session.cart){
+  if (Object.keys(cart.items).length == 0){
     return res.render('shop/shopping_cart', {products: null, user: user});
+  } else {
+    const products = cart.generateArray();
+    products.forEach(item=>{
+      totalPrice += item.price;
+      totalQty += item.qty;
+    });
+    return res.render('shop/shopping_cart', {
+      products,
+      user,
+      totalQty,
+      totalPrice
+    });
   }
-  const cart = new Cart(req.session.cart);
-  cart.generateArray().forEach(item=>{
-    totalPrice += item.item.price;
-    totalQty += item.qty;
-  });
-  if(totalQty==0){
-    res.redirect('/shop');
-  }
-  return res.render('shop/shopping_cart', {
-    products: cart.generateArray(),
-    user,
-    totalQty,
-    totalPrice
-  });
 });
 
 router.get('/checkout', ensureAuthenticated, async (req, res)=>{
-  if(!req.session.cart){
-    return res.redirect('/shop');
-  }
   const userId = await req.user.id;
   const user = await User.findOne({
     where:{
@@ -126,37 +137,31 @@ router.get('/checkout', ensureAuthenticated, async (req, res)=>{
     purchased_before = [].concat.apply([], purchased_before);
     purchased_before = purchased_before.filter(onlyUnique);
   });
-  const cart = new Cart(req.session.cart);
-  let totalQty = 0;
   let totalPrice = 0;
+  let totalQty = 0;
+  const cart = new Cart(req.session.cart ? req.session.cart : {});
   cart.generateArray().forEach(item=>{
-    totalPrice += item.item.price;
     totalQty += item.qty;
+    totalPrice += item.price;
   });
-  if(totalQty==0){
-    res.redirect('/shop');
+  if(totalQty == 0){
+    return res.redirect('/shop');
+  } else {
+    const products_in_cart = cart.generateArray();
+    res.render('shop/checkout', {
+      totalQty,
+      totalPrice,
+      purchased_before,
+      user,
+      products_in_cart,
+      orders: user.orders
+    });
   }
-  res.render('shop/checkout', {
-    totalQty,
-    totalPrice,
-    purchased_before,
-    user,
-    products_in_cart: cart.generateArray(),
-    orders: user.orders
-  });
-  console.log(cart);
 });
 
 const postCheckoutController = require('../controllers/postCheckoutController');
 router.post('/checkout', postCheckoutController);
   // Set your secret key: remember to change this to your live secret key in production
   // See your keys here: https://dashboard.stripe.com/account/apikeys
-
-router.get('/cart_item_delete/:id', (req, res)=>{
-  const productId = req.params.id;
-  delete req.session.cart.items[String(productId)];
-  res.redirect('/shop/checkout');
-
-});
 
 module.exports = router;
