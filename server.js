@@ -152,7 +152,6 @@ app.get("/track", async (req, res) => {
   if (!trackList) {
     return res.send(404, "No track found");
   }
-
   res.writeHead(200, { "Content-Type": "application/json" });
   res.write(JSON.stringify(trackList));
   res.end();
@@ -198,7 +197,7 @@ app.get('/dashboard', ensureAuthenticated, async (req, res) =>{
       totalQty += item.qty;
     });
   }
-  res.render('dashboard', {
+  return res.render('dashboard', {
       user,
       purchased_item,
       totalQty,
@@ -206,6 +205,11 @@ app.get('/dashboard', ensureAuthenticated, async (req, res) =>{
     });
   }
 );
+
+app.get('/download', ensureAuthenticated, function(req, res){
+  const file = `${__dirname}/client/multitrack/AdmiralCrumple_KeepsFlowing/01_Kick1.mp3`;
+  res.download(file); // Set disposition and send it.
+});
 
 const getTracks = async () => {
   const directories = await getFiles(TRACKS_PATH);
@@ -227,7 +231,6 @@ const getTrack = async id =>
     if (!id) reject("Need to provide an ID");
 
     const fileNames = await getFiles(`${TRACKS_PATH}/${id}`);
-
     if (!fileNames) {
       reject(null);
     }
@@ -250,13 +253,22 @@ const getTrack = async id =>
 const getFiles = async dirName =>
   new Promise((resolve, reject) =>
     fs.readdir(dirName, function(error, directoryObject) {
+      console.log(directoryObject);
       if (error) {
         reject(error);
       }
-
       if (directoryObject !== undefined) {
         directoryObject.sort();
       }
+      // const purchased = ['AdmiralCrumple_KeepsFlowing',
+      // 'Big Stone Culture - Fragile Thoughts', 'John McKay - Daisy Daisy'];
+      // for (let i = 0; i < directoryObject.length; i++){
+      //   for (let j =0; j < purchased.length; j++){
+      //     if (directoryObject[i] == purchased[j]){
+      //       delete directoryObject[i];
+      //     }
+      //   }
+      // }
       resolve(directoryObject);
     })
   );

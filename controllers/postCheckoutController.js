@@ -4,7 +4,11 @@ const Order = require('../models/Order');
 
 module.exports = (req, res) =>{
   const cart = new Cart(req.session.cart);
-  const totalPrice = cart.totalPrice;
+  const products = cart.generateArray();
+  let totalPrice = 0;
+  products.forEach(product => {
+    totalPrice += (product.price * product.qty)
+  });
   const token = req.body.stripeToken;
   const email = req.body.email;
   let id_list = [];

@@ -15,7 +15,7 @@ router.get('/', async (req, res)=>{
   let totalQty = 0;
   let totalPrice = 0;
   const cart = new Cart(req.session.cart ? req.session.cart : {} );
-  cart.generateArray().forEach(async item=>{
+  cart.generateArray().forEach(item=>{
     totalQty += item.qty;
     totalPrice += item.item.price * item.qty;
   });
@@ -101,17 +101,22 @@ router.get('/cart_item_delete/:id', async (req, res)=>{
 router.get('/shopping_cart', (req, res)=>{
   const user = req.user;
   const cart = new Cart(req.session.cart ? req.session.cart : {});
+  const products = cart.generateArray();
   let totalQty = 0;
   let totalPrice = 0;
+  products.forEach(item=>{
+    totalPrice += item.price;
+    totalQty += item.qty;
+  });
   if (Object.keys(cart.items).length == 0){
-    return res.render('shop/shopping_cart', {products: null, user: user});
-  } else {
-    const products = cart.generateArray();
-    products.forEach(item=>{
-      totalPrice += item.price;
-      totalQty += item.qty;
+    return res.render('shop/shopping_cart', {
+      products: null,
+      user,
+      totalQty,
+      totalPrice
     });
-    res.render('shop/shopping_cart', {
+  } else {
+    return res.render('shop/shopping_cart', {
       products,
       user,
       totalQty,
