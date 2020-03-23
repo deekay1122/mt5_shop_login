@@ -10,7 +10,11 @@ const keySecret = process.env.SECRET_KEY;
 const stripe = require("stripe")(keySecret);
 const { dontHaveItems } = require('../config/auth');
 
-router.get('/', async (req, res)=>{
+router.get('/test', (req, res, next)=>{
+
+})
+
+router.get('/', async (req, res, next)=>{
   const products = await Product.findAll();
   let totalQty = 0;
   let totalPrice = 0;
@@ -36,7 +40,7 @@ router.get('/', async (req, res)=>{
       orders = [].concat.apply([], orders);
       orders = orders.filter(onlyUnique);
     });
-    return res.render('shop/shop',{
+    return res.render('shop/shop', {
       products,
       orders,
       req,
@@ -46,14 +50,18 @@ router.get('/', async (req, res)=>{
     });
   }
   else {
-    return res.render('shop/shop',{
+    return res.render('shop/shop', {
       products,
       req,
-      totalQty,
-      totalPrice
+      totalPrice,
+      totalQty
     });
   }
 });
+
+function render_shop(req, res, products, orders, user, totalPrice, totalQty){
+  
+}
 
 router.get('/add_to_shopping_cart/:id', (req, res)=>{
   // console.log(req.session.cart);

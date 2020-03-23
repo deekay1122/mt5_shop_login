@@ -66,7 +66,7 @@ nav {
   top: 0;
   display: grid;
   grid-template-rows: [nav] 100px [dropdown] 10px;
-  grid-template-columns: 5% 30% 30% 30% 5%;
+  grid-template-columns: 5% 15% 15% 30% 30% 5%;
   font-size: 1rem;
 }
 
@@ -80,9 +80,20 @@ nav:after {
   z-index: -1;
 }
 
-.logo {
+.nav_shop {
   grid-row: nav;
   grid-column: 2 / 3;
+  align-self: center;
+}
+
+.a_nav_shop {
+  color: var(--white-text);
+  text-decoration: none;
+}
+
+.logo {
+  grid-row: nav;
+  grid-column: 3 / 4;
   align-self: center;
 }
 
@@ -93,7 +104,7 @@ nav:after {
 
 .navbar-list {
   grid-row: nav;
-  grid-column: 4 / 5;
+  grid-column: 5 / 6;
   align-self: center;
 }
 
@@ -118,7 +129,7 @@ nav:after {
 
 .dropdown-menu {
   grid-row: dropdown;
-  grid-column: 4 / 5;
+  grid-column: 5 / 6;
   justify-self: center;
   align-self: start;
   border: 1px solid var(--nav-color);

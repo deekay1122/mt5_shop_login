@@ -1,10 +1,11 @@
 body {
     margin: 0 3%;
-    background: black;
+    background: #311d1d;
 }
 
 #app {
     width: 980px;
+    /* width: 1200px; */
     margin: auto;
     background: #EEE;
 }
@@ -41,9 +42,11 @@ body {
     top: 0;
     height: 200px;
     width: 680px;
+    /* width: 800px; */
     text-align: center;
     background: #EEE;
     border: 1px solid grey;
+    border-radius: 50px;
     z-index: 10;
 }
 
@@ -76,7 +79,7 @@ body {
 }
 
 #myCanvas {
-    background: black;
+    background: #ce2424;
 }
 
 #scroll {

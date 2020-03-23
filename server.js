@@ -129,7 +129,6 @@ const PORT = process.env.PORT,
 app.use(express.static('client'));
 
 // Routes
-// app.use('/', require('./routes/index.js'));
 app.use('/users', require('./routes/users'));
 app.use('/shop', require('./routes/shop'));
 
@@ -148,12 +147,37 @@ app.get("/multitracker", ensureAuthenticated, (req, res) => {
 // routing
 app.get("/track", async (req, res) => {
   const trackList = await getTracks();
-
-  if (!trackList) {
+  const userId = await req.user.id;
+  let purchased_items = [];
+  let modified_trackList = [];
+  const user = await User.findOne({
+    where:{
+      id:userId
+    },
+    include: [Order]
+  });
+  user.orders.forEach(order=>{
+    const items = order.description.split(',');
+    items.forEach(item=>{
+      purchased_items.push(item);
+    });
+  });
+  for (let i = 0; i < trackList.length; i++)
+  {
+    for (let j = 0; j < purchased_items.length; j++)
+    {
+      if (trackList[i] == purchased_items[j])
+      {
+        modified_trackList.push(trackList[i])
+      }
+    }
+  }
+  if (!modified_trackList) {
     return res.send(404, "No track found");
   }
+  
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.write(JSON.stringify(trackList));
+  res.write(JSON.stringify(modified_trackList));
   res.end();
 });
 
@@ -176,8 +200,8 @@ app.get('/dashboard', ensureAuthenticated, async (req, res) =>{
   const products = await Product.findAll();
   const userId = await req.user.id;
   let purchased_item = [];
-  let totalQty = 0;
-  let totalPrice = 0;
+  let totalQty = await 0;
+  let totalPrice = await 0;
   const user = await User.findOne({
     where:{
       id:userId
@@ -192,7 +216,7 @@ app.get('/dashboard', ensureAuthenticated, async (req, res) =>{
   });
   if(req.session.cart!==undefined){
     const cart = new Cart(req.session.cart);
-    cart.generateArray().forEach(item=>{
+    await cart.generateArray().forEach(item=>{
       totalPrice += item.item.price;
       totalQty += item.qty;
     });
@@ -253,22 +277,12 @@ const getTrack = async id =>
 const getFiles = async dirName =>
   new Promise((resolve, reject) =>
     fs.readdir(dirName, function(error, directoryObject) {
-      console.log(directoryObject);
       if (error) {
         reject(error);
       }
       if (directoryObject !== undefined) {
         directoryObject.sort();
       }
-      // const purchased = ['AdmiralCrumple_KeepsFlowing',
-      // 'Big Stone Culture - Fragile Thoughts', 'John McKay - Daisy Daisy'];
-      // for (let i = 0; i < directoryObject.length; i++){
-      //   for (let j =0; j < purchased.length; j++){
-      //     if (directoryObject[i] == purchased[j]){
-      //       delete directoryObject[i];
-      //     }
-      //   }
-      // }
       resolve(directoryObject);
     })
   );

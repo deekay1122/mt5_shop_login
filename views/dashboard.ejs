@@ -3,7 +3,14 @@
   <p>Welcome <%= user.name %></p>
   <% purchased_item.forEach(item=>{ %>
     <div class="dashboard-items">
-      <span class="item-name"><%= item.name %></span> <span class="purchased-on">purchased on <%= item.purchased_at %></span>
+      <span class="item-name">
+        <a href="/multitracker">
+          <%= item.name %>
+        </a>
+      </span>
+      <span class="purchased-on">
+        purchased on <%= item.purchased_at %>
+      </span>
     </div>
   <% });%>
   <a href="/users/logout" class="btn btn-secondary">Logout</a>

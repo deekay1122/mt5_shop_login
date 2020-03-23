@@ -1,4 +1,4 @@
-const stripe = require('stripe')('sk_test_5MBNV2gPcJBqd4mukaFKeYlz00dSoDTVaw');
+const stripe = require('stripe')(process.env.SECRET_KEY);
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 
@@ -43,7 +43,7 @@ module.exports = (req, res) =>{
       });
       newOrder.save();
       delete req.session.cart;
-      res.redirect('/dashboard');
+      return res.redirect('/dashboard');
     });
   });
 }
