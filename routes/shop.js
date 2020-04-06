@@ -40,28 +40,28 @@ router.get('/', async (req, res, next)=>{
       orders = [].concat.apply([], orders);
       orders = orders.filter(onlyUnique);
     });
-    return res.render('shop/shop', {
-      products,
-      orders,
-      req,
-      user,
-      totalPrice,
-      totalQty
-    });
+      setImmediate(
+        res.render('shop/shop', {
+          products,
+          orders,
+          req,
+          user,
+          totalPrice,
+          totalQty
+        })
+      );
   }
   else {
-    return res.render('shop/shop', {
-      products,
-      req,
-      totalPrice,
-      totalQty
-    });
+    setImmediate(
+      res.render('shop/shop', {
+        products,
+        req,
+        totalPrice,
+        totalQty
+      })
+    );
   }
 });
-
-function render_shop(req, res, products, orders, user, totalPrice, totalQty){
-  
-}
 
 router.get('/add_to_shopping_cart/:id', (req, res)=>{
   // console.log(req.session.cart);
