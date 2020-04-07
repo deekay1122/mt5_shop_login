@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 const ResetPasswordToken = require('../models/resetpasswordtoken');
 const send_email = require('../helpers/send_passwordreset_email');
 const crypto = require('crypto');

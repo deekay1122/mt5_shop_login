@@ -1,5 +1,5 @@
-const User = require('../models/user');
-const VerificationToken = require('../models/verificationtoken');
+const User = require('../models/User');
+const VerificationToken = require('../models/VerificationToken');
 const crypto = require('crypto');
 const send_email = require('../helpers/send_verify_email');
 const bcrypt = require('bcryptjs');

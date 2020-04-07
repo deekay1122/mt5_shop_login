@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 const ResetPasswordToken = require('../models/resetpasswordtoken');
 const Cart = require('../models/Cart');
 
